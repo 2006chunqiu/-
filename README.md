@@ -4,11 +4,15 @@
 
 ## 公网地址
 
-**当前公网预览：** https://wangle-card-niqck2fr-rlzp3hxow3.brewpage.app/
+**GitHub Pages（长期）：** https://2006chunqiu.github.io/-/
 
-该地址由 BrewPage 提供，用于即时验收，有效期至 **2026-11-24**。免费预览右侧会显示一个 BrewPage 平台归属小徽标，不影响站点功能。
+**GitHub 仓库：** https://github.com/2006chunqiu/-
 
-**长期部署：** 请按 [GITHUB_DEPLOY.md](GITHUB_DEPLOY.md) 把项目推送到你的 GitHub 仓库，使用已内置的 GitHub Actions 工作流发布到 GitHub Pages，获得长期有效的 `https://<用户名>.github.io/<仓库名>/` 地址。
+该站点已通过仓库内置的 GitHub Actions 工作流完成部署。当前仓库名为 `-`，所以 Pages 地址带 `/-/` 路径；如果以后重命名仓库，Pages 地址会随之变化。后续修改并推送到 `main`，工作流会自动重新构建部署。
+
+**BrewPage 临时预览：** https://wangle-card-niqck2fr-rlzp3hxow3.brewpage.app/
+
+该地址用于即时预览，有效期至 **2026-11-24**，免费预览右侧会显示一个 BrewPage 平台归属小徽标，不影响站点功能。
 
 ## 已填写的信息
 
@@ -120,11 +124,21 @@ npm run deploy:preview
 └─ package.json
 ```
 
-## 长期部署到 GitHub Pages
+## GitHub Pages 部署状态
 
-完整步骤见 **[GITHUB_DEPLOY.md](GITHUB_DEPLOY.md)**。最简流程：
+当前已经完成部署：
 
-1. 在 GitHub 新建 Public 仓库，例如 `wangle-digital-card`。
+- 仓库：`https://github.com/2006chunqiu/-`
+- Pages 站点：`https://2006chunqiu.github.io/-/`
+- Actions 工作流：**Deploy Wang Le digital card to GitHub Pages**
+- Pages Source：**GitHub Actions**
+- 最近一次部署：成功
+
+后续修改源码后，提交并推送到 `main` 即可自动更新。
+
+如果要从零迁移到另一个 GitHub 仓库，完整步骤见 **[GITHUB_DEPLOY.md](GITHUB_DEPLOY.md)**。最简流程：
+
+1. 在 GitHub 新建 Public 仓库。
 2. 在仓库 **Settings → Pages → Source** 选择 **GitHub Actions**。
 3. 在项目目录执行：
 

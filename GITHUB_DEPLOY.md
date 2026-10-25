@@ -1,5 +1,8 @@
 # 长期部署到 GitHub Pages
 
+> **当前实际部署：** 仓库 [2006chunqiu/-](https://github.com/2006chunqiu/-)，站点 <https://2006chunqiu.github.io/-/>，已通过 GitHub Actions 成功部署。  
+> 下文以新建仓库为例；如果继续使用当前仓库，把文中的 `<仓库名>` 替换为 `-` 即可。
+
 本文把王乐的数字名片发布到 **GitHub Pages**，得到一个免费、长期有效的公网地址：
 
 - 项目仓库：`https://<你的用户名>.github.io/<仓库名>/`

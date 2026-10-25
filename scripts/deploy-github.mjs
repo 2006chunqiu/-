@@ -6,7 +6,7 @@ const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(scriptDir, "..");
 const tokenRecordPath = path.join(projectRoot, ".deploy", "github-token.json");
 const owner = process.env.GITHUB_OWNER || "2006chunqiu";
-const repo = process.env.GITHUB_REPO || "wangle-digital-card";
+const repo = process.env.GITHUB_REPO || "-";
 const apiBase = "https://api.github.com";
 const excludedDirectories = new Set([
   ".git",
@@ -25,9 +25,16 @@ const excludedDirectories = new Set([
 ]);
 const excludedFiles = new Set([".DS_Store", "Thumbs.db", "desktop.ini"]);
 
-const record = JSON.parse(await readFile(tokenRecordPath, "utf8"));
-const token = record.access_token;
-if (!token) throw new Error("GitHub token missing");
+let token = process.env.GITHUB_TOKEN || "";
+if (!token) {
+  try {
+    const record = JSON.parse(await readFile(tokenRecordPath, "utf8"));
+    token = record.access_token || "";
+  } catch {
+    token = "";
+  }
+}
+if (!token) throw new Error("GitHub token missing. Set GITHUB_TOKEN or save .deploy/github-token.json.");
 
 const headers = {
   Authorization: "Bearer " + token,
@@ -88,42 +95,38 @@ async function waitForRun(commitSha) {
 
   while (Date.now() - started < 6 * 60 * 1000) {
     const runs = await api("GET", `/repos/${owner}/${repo}/actions/runs?per_page=20`);
-    const candidates = runs.workflow_runs.filter(
-      (run) => run.head_branch === "main" && (run.head_sha === commitSha || !dispatched)
-    );
-    const completed = candidates.find(
+    const candidates = runs.workflow_runs.filter((run) => run.head_sha === commitSha);
+    const success = candidates.find(
       (run) => run.status === "completed" && run.conclusion === "success"
     );
 
-    if (completed) {
-      return completed;
+    if (success) return success;
+
+    const active = candidates.filter((run) => run.status !== "completed");
+    if (active.length) {
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+      continue;
+    }
+
+    if (!dispatched) {
+      await new Promise((resolve) => setTimeout(resolve, 4000));
+      const refreshed = await api("GET", `/repos/${owner}/${repo}/actions/runs?per_page=20`);
+      const hasRun = refreshed.workflow_runs.some((run) => run.head_sha === commitSha);
+      if (!hasRun) {
+        await api("POST", `/repos/${owner}/${repo}/actions/workflows/deploy-pages.yml/dispatches`, {
+          ref: "main"
+        });
+        console.log("Workflow dispatch requested.");
+      }
+      dispatched = true;
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+      continue;
     }
 
     const failed = candidates.find(
       (run) => run.status === "completed" && run.conclusion && run.conclusion !== "success"
     );
-
-    if (failed) {
-      return failed;
-    }
-
-    if (!dispatched) {
-      const anyRun = candidates.some((run) => run.status !== "completed");
-      if (!anyRun) {
-        await new Promise((resolve) => setTimeout(resolve, 4000));
-        const refreshed = await api("GET", `/repos/${owner}/${repo}/actions/runs?per_page=20`);
-        const hasPushRun = refreshed.workflow_runs.some(
-          (run) => run.head_sha === commitSha && run.event === "push"
-        );
-        if (!hasPushRun) {
-          await api("POST", `/repos/${owner}/${repo}/actions/workflows/deploy-pages.yml/dispatches`, {
-            ref: "main"
-          });
-          console.log("Workflow dispatch requested.");
-        }
-        dispatched = true;
-      }
-    }
+    if (failed) return failed;
 
     await new Promise((resolve) => setTimeout(resolve, 5000));
   }
